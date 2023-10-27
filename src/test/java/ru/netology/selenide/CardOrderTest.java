@@ -1,5 +1,6 @@
 package ru.netology.selenide;
 
+import com.codeborne.selenide.SelenideElement;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Keys;
 
@@ -193,5 +194,41 @@ public class CardOrderTest {
         $$("form.form button.button").find(exactText("Забронировать")).click();
 
         $("[data-test-id=agreement]").shouldHave(cssClass("input_invalid"));
+    }
+
+    @Test
+    void shouldSendFormUsingComponents() {
+        open("http://localhost:9999");
+
+        $("[data-test-id=city] input").sendKeys("Ки");
+        $$("body > .popup.input__popup .menu-item").get(3).click();
+
+        $("[data-test-id=date]").click();
+
+        LocalDate base = LocalDate.now().plusDays(3);
+        LocalDate d = LocalDate.now().plusDays(7);
+
+        if (base.getMonth() != d.getMonth()) {
+            $("body > .popup .calendar__title .calendar__arrow.calendar__arrow_direction_right[data-step='1']").click();
+        }
+
+        LocalDate md = d.withDayOfMonth(1);
+        int col = d.getDayOfWeek().getValue();
+        int row = (d.getDayOfMonth() + md.getDayOfWeek().getValue() - 2) / 7 + 1;
+
+        // System.out.println(d + " -> " + col + " " + row);
+
+        SelenideElement r = $$("body > .popup .calendar__layout tr.calendar__row").get(row);
+        r.$$("td.calendar__day").get(col - 1).click();
+
+        $("[data-test-id=name] input").setValue("Иван Петров");
+        $("[data-test-id=phone] input").setValue("+79600000000");
+        $("[data-test-id=agreement]").click();
+        $$("form.form button.button").find(exactText("Забронировать")).click();
+
+        $("form.form > fieldset").shouldHave(attribute("disabled"));
+
+        $("[data-test-id=notification]").shouldBe(visible, Duration.ofSeconds(15));
+        $("[data-test-id=notification] > .notification__content").shouldHave(exactText("Встреча успешно забронирована на " + d.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))));
     }
 }
