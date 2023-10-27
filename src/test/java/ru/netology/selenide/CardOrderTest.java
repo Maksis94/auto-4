@@ -192,6 +192,6 @@ public class CardOrderTest {
         $("[data-test-id=phone] input").setValue("+79600000000");
         $$("form.form button.button").find(exactText("Забронировать")).click();
 
-        $("[data-test-id=agreement]").shouldNotHave(cssClass("input_invalid"));
+        $("[data-test-id=agreement]").shouldHave(cssClass("input_invalid"));
     }
 }
